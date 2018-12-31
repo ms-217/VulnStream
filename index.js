@@ -10,7 +10,7 @@ const express = require('express');
 const app = express();
 const http = require('http').Server(app);
 const io = require('socket.io')(http);
-http.listen(config.HTTP_PORT, function(){
+http.listen(config.HTTP_PORT, 'localhost', function(){
   console.log(chalk.green(`Webserver started on port ${config.HTTP_PORT}`));
 });
 
