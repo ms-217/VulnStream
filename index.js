@@ -72,6 +72,22 @@ let stats = {
             title: "RDP servers with no authentication",
             count: 0
         },
+        openUPnPServers: {
+            title: "Open UPnP servers",
+            count: 0
+        },
+        openChargen: {
+            title: "Open Chargen servers",
+            count: 0
+        },
+        openTelnet: {
+            title: "Open Telnet servers",
+            count: 0
+        },
+        openEcho: {
+            title: "Open echo servers",
+            count: 0
+        },
         vulnerableDevices: {
             title: "Servers/Devices with general vulnerabilites",
             count: 0
@@ -112,8 +128,8 @@ hyperquest(`https://stream.shodan.io/shodan/banners?key=${config.shodan.API_KEY}
             }
         }
 
-        //Open webcams (check 200 OK status first)
-        if (/HTTP\/[1-9]\.[1-9] 200/ig.test(item.data)) {
+        //Open webcams (we don't check for 200 OK because bruteforce applies)
+        if (/HTTP\/[1-9]\.[1-9]/ig.test(item.data)) {
             //Yawcam is up first
             if (/yawcam/ig.test(item.data)) {
                 stats.deviceStats.openWebcams.count++;
@@ -121,8 +137,14 @@ hyperquest(`https://stream.shodan.io/shodan/banners?key=${config.shodan.API_KEY}
             } else if (/webcamxp/ig.test(item.data)) {
                 stats.deviceStats.openWebcams.count++;
                 wasVulnerable = true;
+            } else if (/netcam/ig.test(item.data)) {
+                stats.deviceStats.openWebcams.count++;
+                wasVulnerable = true;
+            } else if (/linux/ig.test(item.data) && /upnp/ig.test(item.data) && /avtech/ig.test(item.data)) {
+                stats.deviceStats.openWebcams.count++;
+                wasVulnerable = true;
             }
-        } else if (/RTSP\/[1-9]\.[1-9] 200/ig.test(item.data)) {
+        } else if (/RTSP\/[1-9]\.[1-9]/ig.test(item.data)) {
             if (/hipcam/ig.test(item.data)) {
                 stats.deviceStats.openWebcams.count++;
                 wasVulnerable = true;
@@ -134,13 +156,16 @@ hyperquest(`https://stream.shodan.io/shodan/banners?key=${config.shodan.API_KEY}
 
         //Check expired certs
         if (item.ssl) {
-            if (item.ssl.cert.expired) {
-                stats.deviceStats.expiredSSLCerts.count++;
-                wasVulnerable = true;
+            if (item.ssl.cert) {
+                if (item.ssl.cert.expired) {
+                    stats.deviceStats.expiredSSLCerts.count++;
+                    wasVulnerable = true;
+                }
             }
         }
 
-        //Check open SMB 
+
+        //Check open SMB and VNC
         if (/authentication\: disabled/ig.test(item.data)) {
             if (item.port === 445) {
                 stats.deviceStats.openSMBServers.count++;
@@ -157,6 +182,29 @@ hyperquest(`https://stream.shodan.io/shodan/banners?key=${config.shodan.API_KEY}
                 stats.deviceStats.openRDPServers.count++;
                 wasVulnerable = true;
             }
+        }
+
+        //Open UPnP
+        if (item.port === 1900 && /upnp/ig.test(item.data)) {
+            stats.deviceStats.openUPnPServers.count++;
+            wasVulnerable = true;
+        }
+
+        //Open telnet servers (not ssh)
+        if (item.port === 23 && !(/ssh/ig.test(item.data))) {
+            stats.deviceStats.openTelnet.count++;
+            wasVulnerable = true;
+        }
+
+        //Chargen servers
+        if (item.port === 19 && /CDEFGHIJKLMNO/ig.test(item.data)) {
+            stats.deviceStats.openChargen.count++;
+            wasVulnerable = true;
+        }
+
+        if (item.port === 7) {
+            stats.deviceStats.openEcho.count++;
+            wasVulnerable = true;
         }
 
         //General vulnerabilities

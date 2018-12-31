@@ -1,0 +1,37 @@
+#mainTitle {
+    font-size: 5em;
+    padding-top: 0.5em;
+    padding-bottom: 0.1em;
+    margin-bottom: 0;
+}
+
+#subTitle {
+    padding-top: 0;
+    margin-top: 0;
+}
+
+.odometer.odometer-animating-up .odometer-ribbon-inner, .odometer.odometer-animating-down.odometer-animating .odometer-ribbon-inner {
+    -webkit-transition-duration: 0.3s !important;
+    -moz-transition-duration: 0.3s !important;
+    -ms-transition-duration: 0.3s !important;
+    -o-transition-duration: 0.3s !important;
+    transition-duration: 0.3s !important
+}
+
+#totalVuln {
+    font-size: 5em;
+    padding-top: 0;
+    margin-top: 0;   
+}
+
+#counter {
+    padding-top: 0;
+    margin-top: 0;
+}
+
+#counterTitle {
+    padding-top: 0;
+    padding-bottom: 0;
+    margin-bottom: 0;
+    margin-top: 0;
+}
