@@ -88,6 +88,10 @@ let stats = {
             title: "Open echo servers",
             count: 0
         },
+        openMQTT: {
+            title: "Open MQTT streams (IoT)",
+            count: 0
+        },
         vulnerableDevices: {
             title: "Servers/Devices with general vulnerabilites",
             count: 0
@@ -145,13 +149,8 @@ hyperquest(`https://stream.shodan.io/shodan/banners?key=${config.shodan.API_KEY}
                 wasVulnerable = true;
             }
         } else if (/RTSP\/[1-9]\.[1-9]/ig.test(item.data)) {
-            if (/hipcam/ig.test(item.data)) {
-                stats.deviceStats.openWebcams.count++;
-                wasVulnerable = true;
-            } else if (/UBNT/ig.test(item.data)) {
-                stats.deviceStats.openWebcams.count++;
-                wasVulnerable = true;
-            }
+            stats.deviceStats.openWebcams.count++;
+            wasVulnerable = true;
         }
 
         //Check expired certs
@@ -202,8 +201,15 @@ hyperquest(`https://stream.shodan.io/shodan/banners?key=${config.shodan.API_KEY}
             wasVulnerable = true;
         }
 
+        //Echo servers
         if (item.port === 7) {
             stats.deviceStats.openEcho.count++;
+            wasVulnerable = true;
+        }
+
+        //Open MQTT streams
+        if (/MQTT Connection Code\: 0/ig.test(item.data)) {
+            stats.deviceStats.openMQTT.count++;
             wasVulnerable = true;
         }
 
