@@ -4,6 +4,7 @@ const config = require('./config.json');
 //Generic modules
 const path = require('path');
 const chalk = require('chalk');
+const moment = require('moment');
 
 //Express and Socket.io
 const express = require('express');
@@ -46,6 +47,10 @@ let stats = {
         },
         cupsPrinters: {
             title: "Open CUPS printers",
+            count: 0
+        },
+        openSMBPrinters: {
+            title: "Open SMB printers",
             count: 0
         },
         openPrinters: {
@@ -99,10 +104,12 @@ let stats = {
     },
     countryStats: {
 
-    }
+    },
+    timeRunning: ''
 }
 
 //Listen to the shodan streaming API
+const startDate = moment(new Date());
 hyperquest(`https://stream.shodan.io/shodan/banners?key=${config.shodan.API_KEY}`)
     .pipe(ndjson.parse())
     .on('data', (item) => {
@@ -169,6 +176,10 @@ hyperquest(`https://stream.shodan.io/shodan/banners?key=${config.shodan.API_KEY}
             if (item.port === 445) {
                 stats.deviceStats.openSMBServers.count++;
                 wasVulnerable = true;
+
+                if (/printer/ig.test(item.data)) {
+                    stats.deviceStats.openSMBPrinters.count++;
+                }
             } else if (/RFB/ig.test(item.data)) {
                 stats.deviceStats.openVNCServers.count++;
                 wasVulnerable = true;
@@ -226,6 +237,28 @@ hyperquest(`https://stream.shodan.io/shodan/banners?key=${config.shodan.API_KEY}
             } else {
                 stats.countryStats[item.location.country_name] = 1;
             }
+
+            //Update how long it's been running
+            let nowDate = moment(new Date());
+            let diff = moment.duration(nowDate.diff(startDate));
+            let res = '';
+            if (diff.days() > 0) {
+                res = res + `${diff.days()} days, `
+            }
+
+            if (diff.hours() > 0) {
+                res = res + `${diff.hours()} hours, `
+            }
+
+            if (diff.minutes() > 0) {
+                res = res + `${diff.minutes()} minutes, `   
+            }
+
+            if (diff.seconds() > 0) {
+                res = res + `${diff.seconds()} seconds.`
+            }
+
+            stats.timeRunning = `Running for ${res}`;
 
             io.emit('infoUpdate', stats);
         }

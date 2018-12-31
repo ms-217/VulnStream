@@ -12,6 +12,10 @@ let stats = {
             title: "Open CUPS printers",
             count: 0
         },
+        openSMBPrinters: {
+            title: "Open SMB printers",
+            count: 0
+        },
         openPrinters: {
             title: "Open printers (total)",
             count: 0
@@ -97,6 +101,9 @@ socket.on('infoUpdate', function(data) {
     // chart.data.datasets[0] = {data: countries_stat, backgroundColor: colors};
     // chart.data.labels = countries;
     // chart.update({duration: 0});
+
+    //Update running since
+    $('.timeRunning').text(stats.timeRunning);
 
     //Apply total number
     $('#totalVuln').text(total);
