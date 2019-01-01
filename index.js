@@ -97,6 +97,14 @@ let stats = {
             title: "Open MQTT streams (IoT)",
             count: 0
         },
+        openSNMP: {
+            title: "Open SNMP servers",
+            count: 0
+        },
+        dnsRecursion: {
+            title: "Open DNS Servers with recursion enabled",
+            count: 0
+        },
         vulnerableDevices: {
             title: "Servers/Devices with general vulnerabilites",
             count: 0
@@ -120,11 +128,9 @@ hyperquest(`https://stream.shodan.io/shodan/banners?key=${config.shodan.API_KEY}
 
         //Printers first!
         if (item.port === 9100) {
-            if (/jpl/ig.test(item.data)) {
-                stats.deviceStats.jplPrinters.count++;
-                stats.deviceStats.openPrinters.count++;
-                wasVulnerable = true;
-            }
+            stats.deviceStats.jplPrinters.count++;
+            stats.deviceStats.openPrinters.count++;
+            wasVulnerable = true;
         } else if (item.port === 515) {
             if (/lpd/ig.test(item.data)) {
                 stats.deviceStats.lpdPrinters.count++;
@@ -179,8 +185,9 @@ hyperquest(`https://stream.shodan.io/shodan/banners?key=${config.shodan.API_KEY}
 
                 if (/printer/ig.test(item.data)) {
                     stats.deviceStats.openSMBPrinters.count++;
+                    stats.deviceStats.openPrinters.count++;
                 }
-            } else if (/RFB/ig.test(item.data)) {
+            } else if (item.port === 5900 || item.port === 5901) {
                 stats.deviceStats.openVNCServers.count++;
                 wasVulnerable = true;
             }
@@ -206,6 +213,12 @@ hyperquest(`https://stream.shodan.io/shodan/banners?key=${config.shodan.API_KEY}
             wasVulnerable = true;
         }
 
+        //Open DNS with recursion
+        if (item.port === 53 && /recursion/ig.test(item.data)) {
+            stats.deviceStats.dnsRecursion.count++;
+            wasVulnerable = true;
+        }
+
         //Chargen servers
         if (item.port === 19 && /CDEFGHIJKLMNO/ig.test(item.data)) {
             stats.deviceStats.openChargen.count++;
@@ -220,6 +233,12 @@ hyperquest(`https://stream.shodan.io/shodan/banners?key=${config.shodan.API_KEY}
 
         //Open MQTT streams
         if (/MQTT Connection Code\: 0/ig.test(item.data)) {
+            stats.deviceStats.openMQTT.count++;
+            wasVulnerable = true;
+        }
+        
+        //Open SNMP servers
+        if (item.port === 161) {
             stats.deviceStats.openMQTT.count++;
             wasVulnerable = true;
         }

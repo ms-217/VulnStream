@@ -60,6 +60,14 @@ let stats = {
             title: "Open MQTT streams (IoT)",
             count: 0
         },
+        openSNMP: {
+            title: "Open SNMP servers",
+            count: 0
+        },
+        dnsRecursion: {
+            title: "Open DNS Servers with recursion enabled",
+            count: 0
+        },
         vulnerableDevices: {
             title: "Servers/Devices with general vulnerabilites",
             count: 0
