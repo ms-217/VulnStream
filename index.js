@@ -25,10 +25,6 @@ app.use(morgan('short'));
 //Serve files
 app.use('/', express.static(path.resolve(__dirname, './web')));
 
-//Socket.io
-io.on('connection', function (socket) {
-    console.log(chalk.green('Someone connected to socket!'));
-});
 
 //Hyperquest to stream json
 const hyperquest = require('hyperquest');
@@ -111,10 +107,16 @@ let stats = {
         }
     },
     countryStats: {
-
+        
     },
     timeRunning: ''
 }
+
+//Socket.io
+io.on('connection', function (socket) {
+    console.log(chalk.green('Someone connected to socket!'));
+    io.emit('infoUpdate', stats);
+});
 
 //Listen to the shodan streaming API
 const startDate = moment(new Date());
@@ -177,7 +179,7 @@ hyperquest(`https://stream.shodan.io/shodan/banners?key=${config.shodan.API_KEY}
         }
 
 
-        //Check open SMB and VNC
+        //Check open SMB
         if (/authentication\: disabled/ig.test(item.data)) {
             if (item.port === 445) {
                 stats.deviceStats.openSMBServers.count++;
@@ -187,7 +189,12 @@ hyperquest(`https://stream.shodan.io/shodan/banners?key=${config.shodan.API_KEY}
                     stats.deviceStats.openSMBPrinters.count++;
                     stats.deviceStats.openPrinters.count++;
                 }
-            } else if (item.port === 5900 || item.port === 5901) {
+            }
+        }
+
+        //Open VNC
+        if (item.port === 5900 || item.port === 5901) {
+            if (item.opts.screenshot) {
                 stats.deviceStats.openVNCServers.count++;
                 wasVulnerable = true;
             }
@@ -239,7 +246,7 @@ hyperquest(`https://stream.shodan.io/shodan/banners?key=${config.shodan.API_KEY}
         
         //Open SNMP servers
         if (item.port === 161) {
-            stats.deviceStats.openMQTT.count++;
+            stats.deviceStats.openSNMP.count++;
             wasVulnerable = true;
         }
 
